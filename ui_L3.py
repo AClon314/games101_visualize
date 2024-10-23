@@ -21,8 +21,10 @@ def Unit_M(length=4):
 
 def get_col(begin=0):
     # Print(f'get_col:{begin}')
-    NG=bpy.data.node_groups["Transform"]
     obj = bpy.context.object
+    if not obj:
+        return None
+    NG=bpy.data.node_groups["Transform"]
     input=NG.nodes["Input Matrix"].inputs
     switch = NG.nodes["Switch"].inputs[0]
     if switch.default_value:
@@ -50,8 +52,10 @@ def set_col(self,newV,begin=0):
 
 def update_matrix(input):
     Print('update_matrix')
-    NG=bpy.data.node_groups["Transform"]
     obj = bpy.context.object
+    if not obj:
+        return
+    NG=bpy.data.node_groups["Transform"]
     switch = NG.nodes["Switch"].inputs[0]
     if switch.default_value:
         matrix = obj.matrix_world.copy()
@@ -70,13 +74,20 @@ def update_matrix(input):
         Print(f'switch:{switch.default_value}\nmatrix:\n{matrix}\n')
 
 def update_switch(self, context):
-    Print('update_shear')
+    Print('update_switch')
     NG=bpy.data.node_groups["Transform"]
     input=NG.nodes["Input Matrix"].inputs
     switch = NG.nodes["Switch"].inputs[0]
 
     switch.default_value = self.shear
     update_matrix(input)
+    
+    obj = bpy.context.object
+    # 检测当前有没有几何节点修改器，没有则添加
+    if not obj.modifiers:
+        modifier = obj.modifiers.new(type='NODES', name='GN')
+        # 设置几何节点修改器的节点树为 'Transform'
+        modifier.node_group = bpy.data.node_groups.get('Transform')
     
 
 class Get:
